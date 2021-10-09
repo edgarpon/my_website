@@ -85,8 +85,8 @@ params:
         subtitle: Biography
         title: About me
         url: blogs/risk_return
-      - image: pic02.jpg
-        subtitle: Feugiat Amet Tempus
+      - image: hobby_time.jpg
+        subtitle: Things I do
         title: Interests
         url: blogs/tempus
       - image: pic03.jpg
