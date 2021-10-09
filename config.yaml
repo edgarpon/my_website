@@ -83,28 +83,28 @@ params:
     showcase:
       - image: lbs.jpg
         subtitle: Biography
-        title: About me
+        title: About
         url: blogs/risk_return
       - image: hobby_time.jpg
         subtitle: Things I do
         title: Interests
         url: blogs/tempus
-      - image: pic03.jpg
-        subtitle: Lorem Etiam Nullam
+      - image: cv_pic.jpg
+        subtitle: My work
         title: Projects
         url: blogs/magna
-      - image: pic04.jpg
-        subtitle: Nisl Sed Aliquam
+      - image: cv_pic.jpg
+        subtitle: My experience
         title: CV
         url: blogs/ipsum
-      - image: pic05.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: What
-        url: blogs/ipsum
-      - image: pic06.jpg
-        subtitle: Feugiat Amet Tempus
-        title: The hell
-        url: blogs/ipsum
+      #- image: pic05.jpg
+       # subtitle: Ipsum Dolor Sit Amet
+        #title: What
+        #url: blogs/ipsum
+      #- image: pic06.jpg
+        #subtitle: Feugiat Amet Tempus
+        #title: The hell
+        #url: blogs/ipsum
   two:
     buttonText: Get Started
     enable: yes
