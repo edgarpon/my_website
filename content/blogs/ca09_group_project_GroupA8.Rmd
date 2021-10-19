@@ -1,0 +1,779 @@
+---
+title: "Final Group Project: AirBnB analytics- Group A8"
+date: "18th October 2021"
+author: "Aditi Lapasia, Diego Alfaro Legonia, Edgar Pon, Ivy Liu, Teen Ho Nicholas Ching, Roberto Keaney, Susan Wang"
+output:
+  html_document:
+    highlight: zenburn
+    theme: flatly
+    toc: yes
+    toc_float: yes
+    number_sections: yes
+    code_folding: show
+---
+```{r huxtable-stuff, include=FALSE}
+options("huxtable.knit_print_df" = FALSE)
+```
+
+```{r setup, include=FALSE}
+# leave this chunk alone
+options(knitr.table.format = "html") 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
+  comment = NA, dpi = 300)
+```
+
+
+```{r load-libraries, echo=FALSE}
+
+library(tidyverse) # the usual stuff: dplyr, readr, and other goodies
+library(lubridate) # to handle dates
+library(GGally) # for correlation-scatter plot matrix
+library(ggfortify) # to produce residual diagnostic plots
+library(rsample) # to split dataframe in training- & testing sets
+library(janitor) # clean_names()
+library(broom) # use broom:augment() to get tidy table with regression output, residuals, etc
+library(huxtable) # to get summary table of all models produced
+library(kableExtra) # for formatting tables
+library(moderndive) # for getting regression tables
+library(skimr) # for skim
+library(mosaic)
+library(leaflet) # for interactive HTML maps
+library(tidytext)
+library(viridis)
+library(vroom)
+library(ggcorrplot)
+library(Metrics)
+```
+
+# Executive Summary
+
+(1) Examining the raw dataset and extracting meaningful observations from it
+(2) Our summary statistics for variables of interest and how we chose them
+(3) Superhosts and verified hosts as indicators of price
+(4) Correlation matrix and key observations
+(5) Summary table and comparing our models
+(6) Final model
+
+After conducting our analysis, what we found to be the strongest indicators of Airbnb prices in San Francisco were: bedrooms, property type, and the number of reviews. This can be quantitatively shown by the very low p-values in our Final Model, which we shall see later. This is consistent with what we may reasonably have expected: the more the number of bedrooms, and the more luxurious the property type the higher the price, and the greater the number of reviews, the lower the price. 
+
+```{r load_data, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+
+# use cache=TRUE so you dont download the data every time you knit
+
+listings <- vroom("http://data.insideairbnb.com/united-states/ca/san-francisco/2021-10-06/data/listings.csv.gz") %>% 
+       clean_names()
+```
+
+# Exploratory Data Analysis (EDA)
+
+You may wish to have a level 1 header (`#`) for your EDA, then use level 2 sub-headers (`##`) to make sure you cover all three EDA bases. **At a minimum** you should address these questions:
+
+- How many variables/columns? How many rows/observations?
+- Which variables are numbers?
+- Which are categorical or *factor* variables (numeric or character variables with variables that have a fixed and known set of possible values?
+- What are the correlations between variables? Does each scatter plot support a linear relationship between variables? Do any of the correlations appear to be conditional on the value of a categorical variable?
+
+At this stage, you may also find you want to use `filter`, `mutate`, `arrange`, `select`, or `count`. Let your questions lead you! 
+
+## Examining the raw dataset
+
+```{r}
+glimpse(listings)
+skim(listings)
+```
+
+**Comment:**
+The dataset for San Francisco’s Airbnb listings has 74 variables with 6,566 rows. Of these variables, 37 are numeric, 24 are character, 8 are logical, and 5 are date. Of course, not all of these variables are integral to the creation of a price model, and we need to be able to separate the signal from the noise by tidying the data. 
+
+In our dataset, categorical or ‘factor’ variables include the 8 logical variables which only have values TRUE or FALSE, and certain character variables such as host_neighbourhood and neighbourhood_cleansed. Understanding which variables have a fixed and known set of possible values is important because it allows us to focus and restrict our analysis. In the case of categorical variables which are numeric, it also allows us to use linear instead of logarithmic scales.
+
+In particular, we have decided on some specific variables of interest to conduct our regression analysis. They are: accommodates, bedrooms, beds, number_of_reviews, review_scores_rating, review_scores_value, minimum_nights, and maximum_nights. 
+
+
+## Summary Statistics for Variables of Interest
+
+### Number of people an AirBNB can accommodate
+
+```{r}
+favstats(listings$accommodates)
+```
+
+### Number of bedrooms
+
+```{r}
+favstats(listings$bedrooms)
+```
+
+### Number of beds
+
+```{r}
+favstats(listings$beds)
+```
+
+### Number of reviews
+
+```{r}
+favstats(listings$number_of_reviews)
+```
+
+### Rating of reviews
+
+```{r}
+favstats(listings$review_scores_rating)
+```
+
+### Value of rating score
+
+```{r}
+favstats(listings$review_scores_value)
+```
+
+### Minimum nights
+
+```{r}
+favstats(listings$minimum_nights)
+```
+
+### Maximum Nights
+
+```{r}
+favstats(listings$maximum_nights)
+```
+
+## Data wrangling
+
+```{r data cleaning}
+
+listings_1 <- listings %>% 
+  drop_na(c(host_is_superhost,host_has_profile_pic,host_identity_verified,instant_bookable,# logical variables
+          bedrooms,beds,review_scores_rating,reviews_per_month,# numerical variables
+          host_response_time,host_response_rate,host_acceptance_rate,bathrooms_text)) #char
+
+# But we still have some "N/A"(not NA), so we need to drop them as well
+na <- c(listings_1$host_response_time,listings_1$host_response_rate,listings_1$host_acceptance_rate)
+
+n <- grep("N/A",na) # choose rows' index that contain "N/A"
+
+listings_2 <- listings_1[-n,] %>% 
+  mutate(price = parse_number(price),
+         host_response_rate=parse_number(host_response_rate),
+         host_acceptance_rate=parse_number(host_acceptance_rate))
+         #host_is_superhost = factor(host_is_superhost, levels = c("TRUE","FALSE")),
+         #host_identity_verified = factor(host_identity_verified, levels = c("TRUE","FALSE")))
+
+listings_2         
+
+typeof(listings$price)
+
+```
+  
+## Visualization
+
+```{r price}
+
+density_price_plot <- ggplot(listings_2, aes(x=price))+
+                      geom_density()+
+                      theme_bw()+
+                      labs(title = "Price Distribution",
+                           subtitle = "Density Plot",
+                           x = "Price",
+                           y = "Density")+
+                      NULL
+
+density_price_plot
+
+```
+**Comment:**
+The density plot for price distribution is heavily skewed right in our visualisation which shows that the Airbnb prices in San Francisco all tend to hover around a similar range of numbers. This makes sense as Airbnb only offers rental services, so prices should not differ that drastically from one another. In the next graph, we can see how we can use logarithmic scales instead.
+
+```{r log price}
+
+density_log_price <-  ggplot(listings_2, aes(x=price)) +
+                      geom_density()+
+                      theme_bw()+
+                      scale_x_log10()+
+                      labs(title = "Price Distribution",
+                           subtitle = "Density Plot",
+                           x = "Log (Price) ",
+                           y = "Density")+
+                      NULL
+density_log_price
+
+```
+**Comment:**
+To better visualise this data, therefore, we can use a logarithmic scale which makes the data look like a more typical normal distribution which is still skewed right. The reason the graph is still skewed negatively is because there is a much higher probability of Airbnb prices being higher and expensive than them being close to 50 or cheaper. 
+
+
+
+```{r graphs}
+
+availability_price <- ggplot(listings_2, aes(x = availability_30, y = log(price)))+
+                      geom_col()+
+                      theme_bw()+
+  labs(title = "Availability for 30 days vs Price",
+                           subtitle = "Bar Chart",
+                           x = "Rooms available within 30 days",
+                           y = "Log (Price)")+
+                      NULL
+
+availability_price
+
+host_response_density <- ggplot(listings_2,aes(x=host_response_rate))+
+                         geom_density()+
+                         theme_bw()+
+   labs(title = "Host Response Rate",
+                           subtitle = "Density Plot",
+                           x = "Response rate",
+                           y = "Density")+
+                         NULL
+
+host_response_density
+
+host_acceptance_density <- ggplot(listings_2,
+                           aes(x=host_acceptance_rate))+
+                           geom_density()+
+                           theme_bw()+
+   labs(title = "Host Response Rate",
+                           subtitle = "Density Plot",
+                           x = "Host Response Rate",
+                           y = "Density")+
+                           NULL
+
+host_acceptance_density
+
+number_of_reviews_density <- ggplot(listings_2,aes(x=number_of_reviews), binwidth=5)+
+                  geom_density()+
+                  theme_bw()+
+  labs(title = "Number of Reviews",
+                           subtitle = "Density Plot",
+                           x = "Number of reviews",
+                           y = "Density")+
+                  NULL
+
+number_of_reviews_density
+
+rating_density <- ggplot(listings_2,aes(x=review_scores_rating))+
+                  geom_density()+
+                  theme_bw()+
+   labs(title = "Review Rating",
+                           subtitle = "Density Plot",
+                           x = "Rating",
+                           y = "Density")+
+                  NULL
+
+rating_density
+
+```
+
+**Comment:**
+Availability for 30 days vs Price:
+As we can see from this chart, the price of those properties available immediately is significantly higher than those only available in several days from now. This is in line with the basic economic proposition of supply and demand and how it affects prices, as the supply of rooms available immediately will be relatively small, while the people who embody the demand for these rooms will tend to be rather desperate and have little other choice. Therefore, the prices for rooms available immediately can be set much higher. In addition, we can see a spike for rooms available 30 days from now, as there similarly may be heightened demand for rooms further into the future as some organised people want to book their Airbnbs far in advance.
+
+Host Response Rate Density Plot:
+The density plot for host response rates shows that the vast majority of host response rates are between 90% and 100%. If they were much less than 90%, it is unlikely that anyone using Airbnb would think their properties to be reliable enough to pay for them. 
+
+Number of Reviews Density Plot:
+The number of reviews density plot is heavily skewed to the right. This is because our axes go up to more than 750 and in reality, each individual property will not have more than 25 reviews. Writing reviews takes time and most consumers tend not to bother taking this time to write reviews unless they feel very passionately about their experience. 
+
+Review Rating Density Plot:
+Most ratings for the Airbnb properties are clustered around the 4.5-5 mark. If they were any less than this, most consumers would probably simply avoid them. Moreover, it is also possible that Airbnb has policies around taking off any listings below a certain number, maybe around 4, in the same way that Uber requires all of its drivers to be above a certain threshold to be able to continue driving for them. 
+
+```{r, superhost}
+superhost_price <- ggplot(listings_2, aes(x=log(price), y=host_is_superhost, fill= host_is_superhost))+
+                   geom_boxplot()+
+                   theme_bw()+
+                   theme(legend.position = "none")+
+                   labs(title = " Relationship between Superhost and Price ",
+                        subtitle = "Box Plot",
+                        x = "Log(Price)",
+                        y = "Superhost")+
+                   NULL
+superhost_price
+
+superhost_price_density <- listings_2 %>%
+                          ggplot(aes(x=log(price), color= host_is_superhost))+
+                               geom_density()+
+                               facet_wrap(~host_is_superhost)+
+                               theme_bw()+
+                          theme(legend.position = "none")+
+  labs(title = "Relationship between Superhost and Price",
+                           subtitle = "Density Plots",
+                           x = "Log(Price)",
+                           y = "Density")+
+                           NULL
+superhost_price_density
+
+superhost_reviews <- ggplot(listings_2, aes(x=number_of_reviews, y=host_is_superhost, fill= host_is_superhost))+
+                     geom_col()+
+                     theme_bw()+
+                     theme(legend.position = "none")+
+  labs(title = " Relationship between Superhost and reviews",
+                           subtitle = "Bar Chart",
+                           x = "Number of Reviews",
+                           y = "Superhost")+
+                           NULL
+superhost_reviews
+
+superhost_rating <- ggplot(listings_2, aes(x=review_scores_rating, y=host_is_superhost, fill= host_is_superhost))+
+                    geom_col()+
+                    theme_bw()+
+                    theme(legend.position = "none")+
+  labs(title = " Relationship between Superhost and ratings",
+                           subtitle = "Bar Chart",
+                           x = "Ratings",
+                           y = "Superhost")+
+                           NULL
+superhost_rating
+```
+**Comment:**
+Relationship between Superhost and Price:
+Somewhat surprisingly, the prices for properties set by superhosts versus non-superhosts is roughly similar. The distribution is also very similar as can be shown by both the box plot and density plot. What this could suggest is that superhosts on Airbnb do not have a significant impact on customers’ view on the properties. However, as we analyse the relationship between superhost and reviews and ratings, we can conclude that being a superhost does make a difference. One possible reason that superhosts and non-superhosts can still have properties at the same prices is that some customers are more sensitive to other factors such as location.
+
+Relationship between Superhost and Reviews:
+Superhosts accumulate many more reviews than non-superhosts, with more than 150,000 compared to just over 50,000 for non-superhosts. If we look into Airbnb guidelines, this is consistent with the very high response rate required of Airbnb superhosts. Each superhost must maintain a response rate of 90% or higher, which may incentivise more people to leave reviews if they feel as if they are almost certain to receive a response. 
+
+Relationship between Superhost and Ratings: 
+Superhosts also attract more ratings than non-superhosts. Again, this can be attributed to the closer relationship superhosts must strive to maintain with their guests in order to preserve their superhost designation. 
+
+
+```{r, host verified}
+host_verified_price <- ggplot(listings_2, aes(x=log(price), y=host_identity_verified, fill= host_identity_verified))+
+                       geom_boxplot()+
+                       theme_bw()+
+                       theme(legend.position = "none")+
+   labs(title = "Relationship between a verified host and price",
+                           subtitle = "Boxplot",
+                           x = "Log(Price)",
+                           y = "Verified Host")+
+                           NULL
+host_verified_price
+
+host_verified_price_density <- ggplot(listings_2, aes(x=log(price), colour = host_identity_verified))+
+                               geom_density()+
+                               facet_wrap(~host_identity_verified)+
+                               theme_bw()+
+                               theme(legend.position = "none")+
+  labs(title = "Relationship between a verified host and price ",
+                           subtitle = "Density Plot",
+                           x = "Log(Price)",
+                           y = "Density")+
+                           NULL
+host_verified_price_density
+
+host_verified_reviews <- ggplot(listings_2, aes(x=number_of_reviews, y=host_identity_verified, fill= host_identity_verified))+
+                         geom_col()+
+                         theme_bw()+
+                         theme(legend.position = "none")+
+  labs(title = "Relationship between a verified host and reviews ",
+                           subtitle = "Bar Chart",
+                           x = "Number of Reviews",
+                           y = "Verified Host")+
+                           NULL
+host_verified_reviews
+
+host_verified_rating <- ggplot(listings_2, aes(x=review_scores_rating, y=host_identity_verified, fill= host_identity_verified))+
+                        geom_col()+
+                        theme_bw()+ 
+                        theme(legend.position = "none")+
+   labs(title = "Relationship between a verified host and ratings",
+                           subtitle = "Bar Chart",
+                           x = "Ratings",
+                           y = "Verified Host")+
+                           NULL
+host_verified_rating
+```
+**Comment:**
+Relationship between a verified host and price:
+Unlike with the relationship between superhosts and price, there is a marked difference in the prices a verified host and non-verified host can charge. This can be explained by the stricter regulations around becoming a verified host on Airbnb. To become a verified host, one needs to provide Airbnb with government ID, whereas Superhosts in contrast only need to have fulfilled requirements to do with minimum response rates, minimum cancellation rates, and minimum ratings.
+
+Relationship between a verified host and reviews:
+Verified hosts receive a much higher volume of reviews than non-verified hosts. This may be attributed to the fact that some verified hosts also require their guests to be verified, in which case they may be avid Airbnb users and be more likely to contribute regular reviews to the properties they stay in. 
+
+Relationship between a verified host and ratings: 
+Consistent with the relationship between a verified host and the number of reviews, the cumulative ratings for a verified host are much higher than for a non-verified host. The relationship between a verified host and ratings is very much comparable to that between a verified host and reviews. 
+
+## Propery types
+
+Next, we look at the variable `property_type`. We can use the `count` function to determine how many categories there are their frequency. What are the top 4 most common property types? What proportion of the total listings do they make up? 
+
+Since the vast majority of the observations in the data are one of the top four or five property types, we would like to create a simplified version of `property_type` variable that has 5 categories: the top four categories and `Other`. Fill in the code below to create `prop_type_simplified`.
+
+
+```{r}
+listings_2 %>% 
+  group_by(property_type) %>% 
+  summarise(num_property_type = count(property_type)) %>% 
+  arrange(desc(num_property_type))
+
+listings_3 <- listings_2 %>%
+  mutate(prop_type_simplified = case_when(
+    property_type %in% c("Entire rental unit", "Private room in residential home","Entire residential home","Entire condominium (condo)") ~ property_type, 
+    TRUE ~ "Other"))
+
+```
+**Comment:**
+The top 4 most common property types are, in order of most common to least common: entire rental unit, private room in residential home, entire residential home, and entire condominium (condo). These top 4 most common property types make up around 64% of all property listings. 
+
+```{r}
+listings_3 %>%
+  count(prop_type_simplified) %>%
+  arrange(desc(n)) 
+```
+
+### Relationship between price and property type
+
+```{r, fig.width=12, fig.height=3}
+
+log_price_prop <-  ggplot(listings_3, aes(x=log(price), color= prop_type_simplified)) +
+                      geom_density()+
+                      theme_bw()+
+                      facet_wrap(~prop_type_simplified, nrow=1)+
+                      labs(title = "Price distribution for different property types",
+                           subtitle = "Density Plot",
+                           x = "Log (Price) ",
+                           y = "Density")+
+                      theme(legend.position = "none")+
+                      NULL
+log_price_prop
+
+```
+**Comment:**
+The prices for the property types of entire rental unit and private room in residential home are especially closely packed together. This may be attributed to the fact that these 2 property types are the most popular and have the highest number of listings, and thus have a lot more properties available at relatively similar prices. 
+
+## Correlation:
+
+```{r}
+data_for_correlation <-listings_3 %>% 
+  select(availability_30, bedrooms, beds, host_listings_count, number_of_reviews_l30d, review_scores_rating)   
+  correlation_matrix <- cor(data_for_correlation) 
+  ggcorrplot(correlation_matrix, hc.order= TRUE, lab = TRUE, colors= c("#CB454A", "white", "#7DCD85"))+
+    labs(title = "Correlation Matrix")
+```
+
+```{r}
+ggpairs(data_for_correlation)+
+    theme_bw()+
+    labs(title = "Relationship between selected variables",
+         subtitles = "Correlation with scatter and density plots")
+```
+**Comment:**
+The most noteworthy thing to observe in this correlation matrix and the relationship between selected variables is the relatively high correlation between beds and bedrooms (correlation of 0.756). This is expected as in general, the greater the number of bedrooms, the greater the number of beds in a given property as well. This may result in some multicollinearity in our regression analysis which will result in less reliable statistical inferences. Other than this, the correlation between these selected variables are all relatively low. The only other exception is the relationship between availability_30 and review_scores_rating (correlation of -0.168). This also can be rationalised by the fact that the longer a property is available shows that demand is scarce for the property and that people might not rate that property highly. Nevertheless, this is still only very marginally correlated (correlation of -0.168), so we should not worry about this too much. 
+
+# Mapping 
+
+Visualizations of feature distributions and their relations are key to understanding a data set, and they can open up new lines of exploration. While we do not have time to go into all the wonderful geospatial visualizations one can do with R, you can use the following code to start with a map of your city, and overlay all AirBnB coordinates to get an overview of the spatial distribution of AirBnB rentals. For this visualization we use the `leaflet` package, which includes a variety of tools for interactive maps, so you can easily zoom in-out, click on a point to get the actual AirBnB listing for that specific point, etc.
+
+The following code, having downloaded a dataframe `listings` with all AirbnB listings in Milan, will plot on the map all AirBnBs where `minimum_nights` is less than equal to four (4). You could learn more about `leaflet`, by following [the relevant Datacamp course on mapping with leaflet](https://www.datacamp.com/courses/interactive-maps-with-leaflet-in-r)
+
+```{r, out.width = '80%'}
+
+leaflet(data = filter(listings_3, minimum_nights <= 4)) %>% 
+  addProviderTiles("OpenStreetMap.Mapnik") %>% 
+  addCircleMarkers(lng = ~longitude, 
+                   lat = ~latitude, 
+                   radius = 1, 
+                   fillColor = "blue", 
+                   fillOpacity = 0.4, 
+                   popup = ~listing_url,
+                   label = ~property_type)
+```
+
+# Regression Analysis
+
+For the target variable $Y$, we will use the cost for two people to stay at an Airbnb location for four (4) nights. 
+
+Create a new variable called `price_4_nights` that uses `price`, and `accomodates` to calculate the total cost for two people to stay at the Airbnb property for 4 nights. This is the variable $Y$ we want to explain.
+
+Use histograms or density plots to examine the distributions of `price_4_nights` and `log(price_4_nights)`. Which variable should you use for the regression model? Why?
+
+Fit a regression model called `model1` with the following explanatory variables: `prop_type_simplified`, `number_of_reviews`, and `review_scores_rating`. 
+
+- Interpret the coefficient `review_scores_rating` in terms of `price_4_nights`.
+- Interpret the coefficient of `prop_type_simplified` in terms of `price_4_nights`.
+
+We want to determine if `room_type` is a significant predictor of the cost for 4 nights, given everything else in the model. Fit a regression model called model2 that includes all of the explanatory variables in `model1` plus `room_type`.
+
+```{r}
+listings_model <- listings_3 %>% 
+  filter(accommodates>=2, minimum_nights<=4) %>% 
+  mutate(price_4_nights = price * 4) %>%  
+  select(76,34,37,38,36,36,41,42,51,56,58,74,61,67,16,17,18,22,23,26,69,28,32,33,75)
+
+colnames(listings_model)
+
+favstats(listings_model$price_4_nights)
+
+listings_model_1 <- listings_model %>% 
+  filter(price_4_nights <= 1106.58+2688.56)
+```
+
+```{r}
+ggplot(listings_model_1,aes(x = price_4_nights)) +
+ geom_density()+
+labs(title = "Price distribution for four nights",
+                       subtitle = "Density Plot",
+                           x = "Price for 4 nights",
+                           y = "Density")+
+                           NULL
+# the density plot without log is quite right-skewed, so we choose to log our Y.
+ggplot(listings_model_1,aes(x = log(price_4_nights))) +
+  geom_density()+
+labs(title = "Price distribution for four nights",
+                       subtitle = "Density Plot",
+                           x = "Log(Price for 4 nights)",
+                           y = "Density")+
+                           NULL
+# it looks better now
+```
+
+## Model 1
+
+```{r}
+model1 <- lm(log(price_4_nights)~prop_type_simplified+number_of_reviews+review_scores_rating,data = listings_model_1)
+summary(model1)
+
+# When a categorical variable has k levels, we include (k-1) in the regression model and the one left outside acts as our baseline (or zero). 
+# in this case, "Entire condominium (condo)" will be the baseline, and the intercept 6.46 is the mean cost of condo.
+#The slope of Entire rental unit is -0.137 – people in Entire rental unit cost on average 0.137 cheaper than the baseline type of Condo
+
+autoplot(model1)+ 
+  theme_bw()
+# to check the residuals
+# there is a pattern in the top left graph,meaning that there are variables in our model that are currently unaccounted for the Y.
+
+car::vif(model1)
+
+```
+**Comment:**
+Looking at the Residuals vs Fitted graph, from fitted values 5.5 to 6.5, residuals bounce around the 0 line randomly and do not suggest any presence of positive or negative correlation with fitted values. The former behaviour suggests that the variance of errors is zero.
+The Normal Q-Q graph shows us a linear positive line which suggests that the data behaves as the normal assumption distribution used for the analysis. This may come across as natural logarithms were applied to the data.
+Regarding the scale location graph, the blue line is approximately horizontal, indicating that the average magnitude of residuals is not changing as a function of fitted values. Nevertheless, spread around the blue line widens as fitted values increase up to 6.5. Afterwards, the spread decreases and starts increasing again until 7.5. The former behaviour may be an indication of heteroskedasticity.
+Finally, the residuals vs leverage graph shows that there are some observations that may affect the predictability of the model. As a consequence, not taking into account these data points in our model would improve predictability.
+
+## Model 2
+
+```{r}
+model2 <- lm(log(price_4_nights)~prop_type_simplified+number_of_reviews+review_scores_rating+room_type,data = listings_model_1)
+summary(model2) #under 95% CI, room_type is significant
+
+autoplot(model2)+
+  theme_bw()
+
+car::vif(model2)
+```
+**Comment:**
+As in Model 1, residuals bounce around line 0 with a spread that widens as fitted values increase. As a consequence, the graph suggests that the variance of errors is zero.
+The normal Q-Q Plot has some data points below the linear positive line but not significantly upper. Therefore, as in model 1, data behaves as expected, according to the normal distribution assumption.
+Regarding the scale location graph, the blue line is approximately horizontal but slightly positive, indicating that standardized residuals change as fitted values increase. In addition, the spread around the line also increases as fitted values do, suggesting presence of heteroskedasticity.
+Finally, the residuals vs leverage graph shows the presence of data points affecting predictability of the model. Therefore, not taking into account those data points would help to improve the robustness of the model. 
+
+## Further variables/questions to explore on our own
+
+Our dataset has many more variables, so here are some ideas on how you can extend your analysis
+
+### Model 3
+
+1. Are the number of `bathrooms`, `bedrooms`, `beds`, or size of the house (`accomodates`) significant predictors of `price_4_nights`? Or might these be co-linear variables?
+```{r}
+listings_model_2 <- listings_model_1 %>% 
+  mutate(bathrooms_num = case_when(bathrooms_text=="1 shared bath"~1,
+                                   bathrooms_text=="3 baths"~3,
+                                   bathrooms_text=="1 private bath"~1,
+                                   bathrooms_text=="1 bath"~1,
+                                   bathrooms_text=="1.5 shared baths"~1.5,
+                                   bathrooms_text=="2.5 shared baths"~2.5,
+                                   bathrooms_text=="2 baths"~2,
+                                   bathrooms_text=="1.5 baths"~1.5,
+                                   bathrooms_text=="2.5 baths"~2.5,
+                                   bathrooms_text=="0 baths"~0,
+                                   bathrooms_text=="2 shared baths"~2,
+                                   bathrooms_text=="4 baths"~4,
+                                   bathrooms_text=="3 shared baths"~3,
+                                   bathrooms_text=="Half-bath"~0.5,
+                                   bathrooms_text=="Shared half-bath"~0.5,
+                                   bathrooms_text=="private half-bath"~0.5,
+                                   bathrooms_text=="3.5 baths"~3.5,
+                                   bathrooms_text=="3.5 shared baths"~3.5,
+                                   bathrooms_text=="5 baths"~5,
+                                   bathrooms_text=="4.5 baths"~4.5,
+                                   bathrooms_text=="4 shared baths"~4,
+                                   bathrooms_text=="5 shared baths"~5,
+                                   bathrooms_text=="5.5 baths"~5.5,
+                                   bathrooms_text=="8 shared baths"~8))
+
+model3 <- lm(log(price_4_nights) ~ bathrooms_num + bedrooms + beds + accommodates,data = listings_model_2)
+summary(model3)
+car::vif(model3)
+```
+**Comment:**
+According to our model, the number of bathrooms is not a significant predictor of price. This may be the case as the number of bathrooms is not a differentiator for a customer when deciding to book an Airbnb. However, the number of bedrooms, beds, and size of house may influence the experience of the customer, and therefore, the final price of the Airbnb. Our model suggests that those 3 variables are significant. Finally, bedrooms and beds is a clear example of collinearity as obviously, most of the time, having more bedrooms in a flat/apartment requires more beds (correlation of 0.76). Therefore, using both variables in our model would not add value. 
+
+### Model 4
+
+1. Do superhosts `(host_is_superhost`) command a pricing premium, after controlling for other variables?
+```{r}
+model4 <- lm(log(price_4_nights) ~ host_is_superhost,data = listings_model_2)
+summary(model4)
+```
+**Comment:**
+After controlling for other variables, the model shows that superhosts do not provide a pricing premium for airbnbs. This may be the case as customers do not consider this characteristic essential and they focus more on other aspects of the flat/apartment. Therefore, landlords do not increase prices because they are superhosts.
+
+### Model 5
+
+1. Some hosts allow you to immediately book their listing (`instant_bookable == TRUE`), while a non-trivial proportion don't. After controlling for other variables, is `instant_bookable` a significant predictor of `price_4_nights`?
+```{r}
+model5 <- lm(log(price_4_nights) ~ instant_bookable,data = listings_model_2)
+summary(model5)
+```
+**Comment:**
+After controlling for other variables, instant_bookable is a significant predictor. The negative coefficient may suggest that landlords are willing to have their flats/apartment booked as soon as possible and for that reason they price their flats at a discount vs non-instantly bookable flats. On the other hand, customers may think it is convenient to be able to book an Airbnb immediately (a feature common for hotel bookings).
+
+### Model 6
+
+1. For all cities, there are 3 variables that relate to neighborhoods: `neighbourhood`, `neighbourhood_cleansed`, and `neighbourhood_group_cleansed`. There are typically more than 20 neighborhoods in each city, and it wouldn't make sense to include them all in your model. Use your city knowledge, or ask someone with city knowledge, and see whether you can group neighborhoods together so the majority of listings falls in fewer (5-6 max) geographical areas. You would thus need to create a new categorical variable `neighbourhood_simplified` and determine whether location is a predictor of `price_4_nights`
+```{r}
+
+#unique(listings$neighbourhood_cleansed,incomparables=FALSE)
+
+listings_model_3 <- listings_model_2 %>% 
+                            mutate(neighbourhood_simplified = ifelse(neighbourhood_cleansed %in% c(
+                                        "Financial District", 
+                                        "Presidio Heights",
+                                        "Seacliff",
+                                        "Haight-Ashbury",
+                                        "Nob Hill",
+                                        "Diamond Heights",
+                                        "West of Twin Peaks",
+                                        "Russian Hill",
+                                        "Noe Valley",
+                                        "Golden Gate Park"), "Prime","Other"))
+
+model6 <- lm(price_4_nights ~ neighbourhood_simplified, data = listings_model_3)
+summary(model6)
+
+```
+**Comment:**
+There are 36 neighbourhoods in San Francisco. Using our city knowledge, we identify 10 good neighbourhoods and categorize them as “Prime”, and other neighbourhoods fall in the category of “Other”. Then we analyse this simplified neighbourhood variable in model 6 to explore the effect of neighbourhood locations on log price for 4 nights.
+In this model, the intercept is 871.65 with a standard deviation of 16.93. The neighbourhood variable has a coefficient of 79.61 and a standard deviation of 43.15, meaning that locating in one of the “Prime” neighbourhoods will increase the log price by 79.61, which matches our expectation. While the intercept is significant (a high t-value of 51.499), the coefficient is only significant at a significance level of 0.05 (t-value = 1.845 <2). 
+
+### Model 7
+
+1. What is the effect of `avalability_30` or `reviews_per_month` on `price_4_nights`, after we control for other variables?
+```{r}
+
+model7 <- lm(log(price_4_nights) ~ availability_30,data = listings_model_3)
+summary(model7)
+
+```
+**Comment:**
+In model 7, we explore the effect of availability on the log price for 4 nights. In this model, the intercept is 6.70058 with a standard deviation of 0.02327. The availability variable has a coefficient of -0.01232 and a standard deviation of 0.00164, meaning that for one increase in availability, there will be -0.01232 decrease the log price for 4 nights. The rationale here is that high availability indicates that the property is less popular and thus has lower price. Both the intercept and coefficient are very significant. 
+
+Based on our analysis in this model, we conclude that availability_30 is a significant predictor after controlling for other variables. 
+
+### Model 8
+
+```{r}
+model8 <- lm(log(price_4_nights) ~ reviews_per_month,data = listings_model_3)
+summary(model8)
+```
+**Comment:**
+In this model, we analyse the effect of reviews per month on log price for 4 nights. The variable for reviews per month has an intercept of 6.604 and a standard deviation of 0.017. This equivalent t value of this test suggests that the null hypothesis can be easily rejected at any level of significance. The interpretation indicates that when the reviews per month variable takes on a value of ‘0’, the average log price for 4 nights is equal to 6.604.
+
+The variable reviews per month has an estimate of -0.009 and a standard deviation of 0.0021. The t value is also significant and indicates that for every review the log price for 4 nights with change -0.009.
+
+## Model 9
+
+```{r model}
+# model9 contains all the significant variables we explored before
+model9 <- lm(log(price_4_nights) ~ availability_30 + reviews_per_month + neighbourhood_simplified +
+                         instant_bookable + host_is_superhost + bedrooms + beds + bathrooms_num + prop_type_simplified + number_of_reviews + review_scores_rating + number_of_reviews_l30d + room_type,data = listings_model_3)
+summary(model9)
+
+autoplot(model9)+
+  theme_bw()
+
+car::vif(model9)
+```
+**Comment:**
+After regressing the reviews per month variable on log price of 4 nights with all our significant variables, we can observe several tendencies. In the first residuals vs fitted plot, we can observe that this presents the characteristics of an appropriate model. The residuals of the model float around the 0 line, suggesting the linear relationship is correct. The overall form seems to be horizontal, which indicates the variances of the error terms are equal.
+
+The normal Q-Q plot follows the plot of a normal distribution and does not present any outliers along the distribution line. The scale location plot presents the blue line horizontal across the plot. This indicates homoscedasticity is present in this regression model. That is, the spread of the residuals are roughly equal at all fitted values. The residuals seem to be scattered randomly around the blue line, although slightly more present above the line than under. It would be reasonable to assume they all have similar variability at all fitted values. Throughout the residuals vs leverage plot, we can perceive that the spread of the residuals tends to decrease as leverage increases, indicating the possibility of heteroscedasticity. The spread of residuals should remain constant regardless of the amount of leverage. The residuals all seem to be close to the blue line, indicating that no individual residual is having a large impact on the model.
+
+## Model 10
+
+```{r}
+# the model we choose:
+
+model10<- lm(log(price_4_nights) ~ availability_30 + neighbourhood_simplified + instant_bookable + bedrooms + prop_type_simplified + number_of_reviews + review_scores_rating + room_type,data = listings_model_3)
+summary(model10)
+
+autoplot(model10)+
+  theme_bw()
+
+car::vif(model10)
+```
+**Comment:**
+Model 10 presents almost identical results for the first three plots previously mentioned. The exception lies with the residuals vs leverage plot. In this plot, we can see that leverage does not have an impact on residuals for almost all the residuals present. There seem to be some residuals at the end of the blue line which could be outliers impacting the results of the model. Overall, this plot indicated the model is homoskedastic.
+
+## Diagnostics, collinearity, summary tables
+
+1. Create a summary table, using `huxtable` that shows which models you worked on, which predictors are significant, the adjusted $R^2$, and the Residual Standard Error.
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE}
+
+library(huxtable)
+huxreg("Model 1"=model1,"Model 2"=model2, "Model 3"=model3, "Combined Model"=model9, "Final Model"=model10,
+       statistics = c('Number of observations' = 'nobs', 
+                      'Adj. R Squared' = 'adj.r.squared', 
+                      'Residual SE' = 'sigma'), 
+       bold_signif = 0.5, 
+       stars = NULL
+) %>% 
+  set_caption("Comparison of models") %>% 
+  set_width(1)  
+
+```
+
+
+1. Finally, you must use the best model you came up with for prediction. Suppose you are planning to visit the city you have been assigned to over reading week, and you want to stay in an Airbnb. Find Airbnb's in your destination city that are apartments with a private room, have at least 10 reviews, and an average rating of at least 90. Use your best model to predict the total cost to stay at this Airbnb for 4 nights. Include the appropriate 95% interval with your prediction. Report the point prediction and interval in terms of `price_4_nights`. 
+  - if you used a log(price_4_nights) model, make sure you anti-log to convert the value in $. You can read more about [how to interpret a regression model when some variables are log transformed here](https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faqhow-do-i-interpret-a-regression-model-when-some-variables-are-log-transformed/)
+```{r model-prediction}
+
+data_for_predict <- listings_model_3 %>% 
+  filter(room_type == "Private room",
+         number_of_reviews_l30d>=10,
+         review_scores_rating>=0.9)
+
+
+#data_for_predict <- data.frame(availability_30=30, neighbourhood_simplified ="Prime" , instant_bookable=TRUE, bedrooms=1 , prop_type_simplified="Private room in residential home" ,  number_of_reviews=10 , review_scores_rating=4 , room_type="Private room") 
+
+data_for_predict
+
+# When we plug this multi-row data frame into predict(), it'll generate a
+# prediction for each row
+
+model_prediction <- data.frame(predict(model10, newdata = data_for_predict, interval = "confidence")) %>% 
+  mutate(Price = exp(fit),
+         CI_lower = exp(lwr),
+         CI_upper = exp(upr)) %>% 
+  select(4,5,6)
+
+model_prediction %>% 
+  kbl() %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>% 
+  kable_styling(bootstrap_options = c("striped", "condensed"))
+
+
+```
+**Comment:**
+The inputs of the model are a private room in a 1 bedroom residential house in a prime neighbourhood. The constraints are a minimum of 10 reviews and an average rating of more than 4. The model predicts a confidence interval of 410.3619 - 495.8104, with an average estimate price of 451.0672.
+
+**Things that can be improved in the future:** 
+
+1. Cleaning the data more precisely to increase the accuracy of the estimation 
+2. Exploring more variables that may influence the price to increase the explanatory degree of our model(increase R2). 
+3. Increase the form of variables in the model, actually we have tried to add the cross term, but it not performs good as we have expected.
+
+# Acknowledgements
+
+- The data for this project is from [insideairbnb.com](insideairbnb.com)
