@@ -1,7 +1,7 @@
 ---
-title: "MFA 20222 Pre-programme Assignment"
+title: "About Me"
 author: "Edgar Pon"
-date: "27/08/2021"
+date: "19/10/2021"
 output:
   html_document:
     theme: flatly
@@ -12,16 +12,8 @@ output:
     toc: yes
 ---
 
-```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
-library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
-library(gapminder)  # gapminder dataset
-library(here)
-#install.packages(janitor)
-library(janitor)
-```
-
 # My Biography
-My name is _Edgar Pon_ and I’m from Lisbon and Macao.I am currently reading for **Masters in Financial Analysis** at _London Business School_ I have completed my bachelor’s degree in **Economics** last year and I lived in _Portugal_, _Macao_ and _France_. I like a good balance between studying and partying and I enjoy having a good time, going out sometimes, having dinner and going to the pub. 
+My name is _Edgar Pon_ and I’m from Lisbon and Macao.I am currently reading for **Masters in Financial Analysis** at _London Business School_. I have completed my bachelor’s degree in **Economics** last year and I lived in _Portugal_, _Macao_ and _France_. I like a good balance between studying and partying and I enjoy having a good time, going out sometimes, having dinner and going to the pub. 
 I am fluent in: 
 
 * Portuguese
