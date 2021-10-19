@@ -13,6 +13,19 @@ keywords: ""
 slug: About me
 title: About me
 ---
+---
+title: "Portugal Study"
+author: "Edgar Pon"
+date: "19/10/2021"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
 
 ```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
 library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
