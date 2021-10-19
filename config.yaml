@@ -87,7 +87,7 @@ params:
       - image: hobby_time.jpg
         subtitle: Curriculum Vitae
         title: My Experience
-        url: blogs/Edgar_Pon
+        url: '/files/Edgar Pon CV.pdf'
       - image: cv_pic.jpg
         subtitle: Life expectancy comparison
         title: Portugal Gapminder Study

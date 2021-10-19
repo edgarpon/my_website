@@ -11,13 +11,6 @@ slug: About Me
 title: About Me
 ---
 
-
-```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
-library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
-library(gapminder)  # gapminder dataset
-library(here)
-#install.packages(janitor)
-library(janitor)
 ```
 
 # My Biography
