@@ -84,7 +84,7 @@ params:
       - image: my_name.jpg
         subtitle: Portugal - Macao - London
         title: About me
-        url: blogs/risk_return
+        url: blogs/About_me
       - image: hobby_time.jpg
         subtitle: Things I do
         title: Interests
