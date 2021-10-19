@@ -7,7 +7,7 @@ disqusShortname: ''
 params:
   banner:
     buttonText: Get Started
-    subtitle: |-###
+    subtitle: |-
       A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
       AND RELEASED UNDER THE CREATIVE COMMONS.
     title: Hi, my name is Edgar
@@ -29,7 +29,7 @@ params:
         title: Phone
   custom_css: []
   custom_js: []
-  description: Your description
+  description: 
   error404:
     heading: Page couldn't be found
     text: Please visit [this page](/)
@@ -81,14 +81,14 @@ params:
   tiles:
     enable: yes
     showcase:
-      - image: lbs.jpg
-        subtitle: Biography
-        title: About
+      - image: my_name.jpg
+        subtitle: Portugal - Macao - London
+        title: About me
         url: blogs/risk_return
       - image: hobby_time.jpg
         subtitle: Things I do
         title: Interests
-        url: blogs/tempus
+        url: blogs/Edgar_Pon
       - image: cv_pic.jpg
         subtitle: My work
         title: Projects
