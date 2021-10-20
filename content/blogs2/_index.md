@@ -6,4 +6,4 @@ slug: My code
 title: My R Projects
 ---
 
-My blogs about technology and lifestyle.
+Interesting studies.
