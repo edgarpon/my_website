@@ -76,7 +76,7 @@ params:
       #  url: blogs/Portugal_Study
     menu: Menu
     #subtitle: By HTML5 Up
-    #title: Forty
+    title: Home
   tiles:
     enable: yes
     showcase:
@@ -88,22 +88,22 @@ params:
         subtitle: Curriculum Vitae
         title: My Experience
         url: '/files/Edgar Pon CV.pdf'
+      - image: Inflation
+        subtitle: ''
+        title: CPI Research
+        url: blogs/CPI
+      - image: starbucks.jpg
+        subtitle: Time Series Analysis
+        title: Starbucks Research
+        url: '/files/Starbucks.pdf'
       - image: portfolio.jpg
         subtitle: Asset Allocation Analysis
         title: Portfolio Construction
         url: '/files/Portfolio Analysis.pdf'
       - image: crime.jpg
         subtitle: Analysis over time
-        title: Crime vs Education   
+        title: Crime vs Education
         url: '/files/Crime-education.pdf'
-      - image: starbucks.jpg
-        subtitle: Competition and Market Power
-        title: Starbucks Research
-        url: '/files/Starbucks.pdf'
-      #- image: pic06.jpg
-        #subtitle: Feugiat Amet Tempus
-        #title: The hell
-        #url: blogs/ipsum
   two:
     buttonText: Get Started
     enable: yes
