@@ -1,15 +1,17 @@
 ---
-title: "About Me"
-author: "Edgar Pon"
-date: "19/10/2021"
-output:
-  html_document:
-    theme: flatly
-    highlight: zenburn
-    toc: yes
-    toc_float: yes
-  pdf_document:
-    toc: yes
+categories:
+- ""
+- ""
+date: "2017-10-31T22:26:13-05:00"
+description: Nullam et orci eu lorem consequat tincidunt vivamus et sagittis magna
+  sed nunc rhoncus condimentum sem. In efficitur ligula tate urna. Maecenas massa
+  sed magna lacinia magna pellentesque lorem ipsum dolor. Nullam et orci eu lorem
+  consequat tincidunt. Vivamus et sagittis tempus.
+draft: false
+image: pic08.jpg
+keywords: ""
+slug: tempus
+title: Tempus
 ---
 
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
@@ -65,7 +67,7 @@ NULL
 
 plot1</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<p><img src="/blogs/Portugal_Study_files/figure-html/lifeExp_one_country-1.png" width="672" /></p>
+<p><img src="/blogs2/Portugal_Study_files/figure-html/lifeExp_one_country-1.png" width="672" /></p>
 <p>And use <code>labs()</code> function to add an informative title to the plot.</p>
 <pre class="r"><code>plot1&lt;- plot1 +
 labs(title = &quot;Portugal Life Expectancy&quot;,
@@ -76,14 +78,14 @@ NULL
 
 plot1</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<p><img src="/blogs/Portugal_Study_files/figure-html/lifeExp_one_country_with_label-1.png" width="672" /></p>
+<p><img src="/blogs2/Portugal_Study_files/figure-html/lifeExp_one_country_with_label-1.png" width="672" /></p>
 <p>Next, I produce the plot for the european continent.</p>
 <pre class="r"><code>ggplot(data=continent_data, mapping = aes(x = year , y = lifeExp , colour= country, group =country))+
 geom_point() + 
 geom_smooth(se = FALSE) +
 NULL</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<p><img src="/blogs/Portugal_Study_files/figure-html/lifeExp_one_continent-1.png" width="672" /></p>
+<p><img src="/blogs2/Portugal_Study_files/figure-html/lifeExp_one_continent-1.png" width="672" /></p>
 <p>Finally, I create graphs for all the continents and plot the life expectancy over time.</p>
 <pre class="r"><code>ggplot(data = gapminder , mapping = aes(x = year , y = lifeExp , colour= continent))+
 geom_point() + 
@@ -92,7 +94,7 @@ facet_wrap(~continent) +
 theme(legend.position=&quot;none&quot;) + #remove all legends
 NULL</code></pre>
 <pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
-<p><img src="/blogs/Portugal_Study_files/figure-html/lifeExp_facet_by_continent-1.png" width="672" /></p>
+<p><img src="/blogs2/Portugal_Study_files/figure-html/lifeExp_facet_by_continent-1.png" width="672" /></p>
 <p>After a thorough analysis, I came to the following conclusion.</p>
 <blockquote>
 <p>Type your answer after this blockquote.</p>
