@@ -24,7 +24,7 @@ params:
         title: Email
     enable: yes
     phone:
-      - phone: (+44) 7741587172 x1234
+      - phone: Upon request
         title: Phone
   custom_css: []
   custom_js: []
