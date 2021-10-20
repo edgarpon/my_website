@@ -70,10 +70,10 @@ params:
         url: '#'
       - name: Yield Curve Research
         url: blogs/yield_research
-      - name: Generic Blog
-        url: blogs/ipsum
-      - name: Elements
-        url: elements.html
+      - name: Biden's Approval Rate Research
+        url: blogs/Biden_Study
+      - name: Portugal Gapminder Research
+        url: blogs/Portugal_Study
     menu: Menu
     subtitle: By HTML5 Up
     title: Forty
@@ -93,12 +93,12 @@ params:
         title: Yield Curve Research
         url: blogs/yield_research
       - image: cv_pic1.jpg
-        subtitle: Biden's Approval Rate
-        title: Biden Presidency 
+        subtitle: Analysis over time
+        title: Biden's Approval Rate Research  
         url: blogs/Biden_Study
       - image: pic05.jpg
         subtitle: Life expectancy comparison
-        title: Portugal Gapminder Study
+        title: Portugal Gapminder Research
         url: blogs/Portugal_Study
       #- image: pic06.jpg
         #subtitle: Feugiat Amet Tempus
