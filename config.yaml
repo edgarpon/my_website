@@ -61,7 +61,7 @@ params:
   navigation:
     button1:
       - name: Get Started
-        url: blogs
+        url: '#'
     button2:
       - name: Log In
         url: '#'
@@ -81,7 +81,7 @@ params:
     enable: yes
     showcase:
       - image: my_name.jpg
-        subtitle: Portugal - Macao - London
+        subtitle: Lisbon - Macao - Nice - London
         title: About me
         url: blogs/About_me
       - image: cv_pic.jpg
@@ -109,4 +109,4 @@ params:
     enable: yes
     subtitle: "@Edgar Pon, Made with Academic theme for Hugo and help of staff of Data Analytics for Finance"
     title: Massa libero
-    url: blogs
+    url: '#'
