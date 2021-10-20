@@ -89,19 +89,19 @@ params:
         title: My Experience
         url: '/files/Edgar Pon CV.pdf'
       - image: Inflation.jpg
-        subtitle: ''
+        subtitle: R Coding Research
         title: CPI Research
         url: blogs/CPI
       - image: starbucks.jpg
-        subtitle: Time Series Analysis
+        subtitle: Time Series Analysis Paper
         title: Starbucks Research
         url: '/files/Starbucks.pdf'
       - image: portfolio.jpg
-        subtitle: Asset Allocation Analysis
+        subtitle: Asset Allocation Analysis Paper
         title: Portfolio Construction
         url: '/files/Portfolio Analysis.pdf'
       - image: crime.jpg
-        subtitle: Analysis over time
+        subtitle: Crime Education Paper
         title: Crime vs Education
         url: '/files/Crime-education.pdf'
   two:
