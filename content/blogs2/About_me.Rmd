@@ -1,0 +1,28 @@
+---
+title: "About Me"
+author: "Edgar Pon"
+date: "19/10/2021"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+# My Biography
+My name is _Edgar Pon_ and I’m from Lisbon and Macao.I am currently reading for **Masters in Financial Analysis** at _London Business School_. I have completed my bachelor’s degree in **Economics** last year and I lived in _Portugal_, _Macao_ and _France_. I like a good balance between studying and partying and I enjoy having a good time, going out sometimes, having dinner and going to the pub. 
+I am fluent in: 
+
+* Portuguese
+* English
+* Cantonese
+* Mandarin 
+
+In my free time, I enjoy watching (any kind of sports) and playing football, chess and board games. 
+
+   
+
+

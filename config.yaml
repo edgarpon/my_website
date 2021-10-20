@@ -68,8 +68,8 @@ params:
     links:
       - name: Home
         url: '#'
-      - name: Yield Curve Research
-        url: blogs/yield_research
+      - name: MY R Projects
+        url: blogs2
       - name: Biden's Approval Rate Research
         url: blogs/Biden_Study
       - name: Portugal Gapminder Research
@@ -107,6 +107,6 @@ params:
   two:
     buttonText: Get Started
     enable: yes
-    subtitle: "@Edgar Pon, Made with Academic theme for Hugo template"
+    subtitle: "@Edgar Pon, Made with Academic theme for Hugo"
     title: 
-    url: '#'
+    url: blogs2
