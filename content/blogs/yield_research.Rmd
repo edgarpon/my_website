@@ -1,0 +1,208 @@
+---
+title: "Yield Curve Research"
+author: "Aditi Lapasia, Diego Alfaro Legonia, Edgar Pon, Ivy Liu, Teen Ho Nicholas Ching, Roberto Keaney, Susan Wang"
+date: "9th October 2021"
+output:
+  html_document:
+    theme: flatly
+    highlight: zenburn
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr,y and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+```
+
+
+Yield Curve study
+
+Every so often, we hear warnings from commentators on the "inverted yield curve" and its predictive power with respect to recessions. An explainer what a [inverted yield curve is can be found here](https://www.reuters.com/article/us-usa-economy-yieldcurve-explainer/explainer-what-is-an-inverted-yield-curve-idUSKBN1O50GA). If you'd rather listen to something, here is a great podcast from [NPR on yield curve indicators](https://www.podbean.com/media/share/dir-4zgj9-6aefd11)
+
+In addition, many articles and commentators think that, e.g., [*Yield curve inversion is viewed as a harbinger of recession*](https://www.bloomberg.com/news/articles/2019-08-14/u-k-yield-curve-inverts-for-first-time-since-financial-crisis). One can always doubt whether inversions are truly a harbinger of recessions, and [use the attached parable on yield curve inversions](https://twitter.com/5_min_macro/status/1161627360946511873).
+
+In our case we will look at US data and use the [FRED database](https://fred.stlouisfed.org/) to download historical yield curve rates, and plot the yield curves since 1999 to see when the yield curves flatten. If you want to know more, a very nice article that explains the [yield curve is and its inversion can be found here](https://fredblog.stlouisfed.org/2018/10/the-data-behind-the-fear-of-yield-curve-inversions/). 
+
+First, we will load the yield curve data file that contains data on the yield curve since 1960-01-01
+
+```{r download_historical_yield_curve, warning=FALSE}
+
+yield_curve <- read_csv(here::here("data", "yield_curve.csv"))
+
+glimpse(yield_curve)
+
+#skimr::skim(yield_curve$duration)
+
+yield_curve_table <- yield_curve %>% 
+                     mutate(duration = factor(duration, levels= c("3-Month Treasury Bill", "6-Month Treasury Bill", "1-Year Treasury Rate","2-Year Treasury Rate", "3-Year Treasury Rate", "5-Year Treasury Rate", "7-Year Treasury Rate", "10-Year Treasury Rate","20-Year Treasury Rate", "30-Year Treasury Rate")),
+                            maturity = factor(maturity, levels= c("3m", "6m", "1y", "2y","3y","5y","7y","10y","20y","30y"))) 
+
+yield_curve_table
+
+
+yield_curve_table_1 <- yield_curve_table %>%   
+                       select("date", "value", "duration") %>% 
+                       filter(duration %in% c("3-Month Treasury Bill","10-Year Treasury Rate")) %>% 
+                       pivot_wider(names_from = duration , values_from = value) 
+
+colnames(yield_curve_table_1) = c("date", "three_month", "ten_year" )
+
+yield_curve_table_1                   
+
+yield_curve_table_2 <- yield_curve_table_1 %>%
+                       group_by(date) %>%
+                       mutate(difference = ten_year-three_month,
+                              up = ifelse(difference>0, difference,0),
+                              down = ifelse(difference<0, difference,0),
+                              color_id = if_else(difference>0,"steelblue1","tomato2"))
+
+yield_curve_table_2
+
+```
+## Plotting the yield curve
+
+### Yields on US rates by duration since 1960
+
+```{r, graph 1, fig.width= 12, fig.height= 10}
+
+ggplot(yield_curve_table, aes(x=date, y=value, color= duration)) +
+  geom_line()+
+  facet_wrap(~duration, ncol = 2) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  labs(title = "Yields on U.S. Treasury rates since 1960",
+                 x ="",
+                 y = "%",
+                 caption = "Source: St. Louis Federal Reserve Economic Database (FRED)")+
+  NULL
+
+```
+
+Comment: There are 10 graphs that display the evolution of yields for T-Bonds with different maturities: 3-month-, 6-month, …, 30-year. During the 1960s, there was a positive trend increase for all yields (except 2-year, 7-year, and 20-year) which was driven mainly by Fed’s attempt to raise short-term rates and lower long-term rates in order to discourage capital outflows and stimulate investment. During the 1970s, interest rates decreased for the first years because of Nixon’s Government pressure on the Fed to boost consumption and investment. Nevertheless, high levels of inflation, mainly as a consequence of Fed’s low rates policy, were addressed with an increase of interest rates of up to 20%. During the early 1980s, a global recession was triggered by higher prices as a consequence of shortage of oil supply. The Fed’s policy was to increase interest rates in order to stop inflation. Nevertheless, policy led to a stagflation period of high inflation, high interest rates and low growth.
+
+During the early 1990s, the economy was still in recession and the Fed decided to increase rates. However, as inflation decreased, the Fed lowered interest rates (as shown in graphs) and the US economy experienced growth until the late 1990s. During the late 1990s and early 2000s, the US experienced a deterioration in its economy that forced the Fed to lower rates further in order to stimulate growth. Finally, after the 2008-2009 Financial Crisis, the Fed started to use another policy: Quantitative Easing. Via this new policy, the Fed would not only stimulate the economy through short term rates, but also in long term rates via purchasing of long-term bonds.
+
+### Monthly yields on US rates by duration since 1999 on a year-by-year basis
+
+```{r graph 2, fig.width= 12, fig.height= 10}
+
+yield_curve_table_3 <- yield_curve_table %>% 
+                       mutate(year = factor(year(date))) %>%
+                       filter(date>='1999-01-01')
+
+ggplot(yield_curve_table_3, aes(x= maturity, y= value, group = date, color= year))+
+geom_path() +
+facet_wrap(~year, ncol= 4)+
+theme_bw() +
+theme(legend.position = "none") +
+labs(title = "US Yield Curve",
+      x ="Maturity",
+      y = "Yield (%)",
+      caption = "Source: St. Louis Federal Reserve Economic Database (FRED)")+
+  NULL
+
+```
+
+Comment: Detailed graphs provide us with a better insight of how yield curves inverted between 12-24 month before recessions. For instance, during 2000, the graph shows an inversion in the yield curve 1 year before the 2001 crisis. Furthermore, before the 2008 crisis, the yield curve flattened in 2006 and 2007. Finally, in 2019 the yield curve flattened. However, it cannot be related to the 2020 crisis, which was caused by COVID 19 pandemic global restrictions.
+
+
+### 3-month and 10-year yields since 1999
+
+```{r graph 3, fig.width= 12, fig.height= 10}
+
+yield_curve_table_4 <- yield_curve_table %>%   
+                       select("date", "value", "duration") %>% 
+                       filter( duration %in% c("3-Month Treasury Bill","10-Year Treasury Rate"))
+
+ggplot(data = filter(yield_curve_table_4, date>= "1999-01-01"),aes(x=date, y=value, color= duration)) +
+  geom_line()+
+  theme_bw()+
+  theme(legend.title = element_blank())+
+  labs(title = "Yields on 3-month and 10-year US Treasury rates since 1999",
+                 x ="",
+                 y = "%",
+                 caption = "Source: St. Louis Federal Reserve Economic Database (FRED)")+
+  NULL
+
+```
+
+Comment: From the more-detailed graph we can conclude that the spread widens during economic growth times and it shortens as economic conditions deteriorate or even become negative 12 to 24 months before a recession. It is worth mentioning that the spread between 10-year and 3-month T-bills has widened as positive global expectations on economic growth are increasing, especially for the US economy, as the US population receives immunity brought by vaccines.
+
+
+The code below creates a dataframe with all US recessions since 1946
+
+```{r setup_US-recessions, warning=FALSE}
+
+# get US recession dates after 1946 from Wikipedia 
+# https://en.wikipedia.org/wiki/List_of_recessions_in_the_United_States
+
+recessions <- tibble(
+  from = c("1948-11-01", "1953-07-01", "1957-08-01", "1960-04-01", "1969-12-01", "1973-11-01", "1980-01-01","1981-07-01", "1990-07-01", "2001-03-01", "2007-12-01","2020-02-01"),  
+  to = c("1949-10-01", "1954-05-01", "1958-04-01", "1961-02-01", "1970-11-01", "1975-03-01", "1980-07-01", "1982-11-01", "1991-03-01", "2001-11-01", "2009-06-01", "2020-04-30") 
+  )  %>% 
+  mutate(From = ymd(from), 
+         To=ymd(to),
+         duration_days = To-From)
+
+
+recessions
+```
+
+```{r graph 4, fig.width= 12}
+
+library(scales)
+
+treasury_rate_graph<- ggplot(yield_curve_table_2, aes(x = date, y= difference)) + 
+        geom_rect(data= filter(recessions, From > "1960-01-01"),inherit.aes = F, mapping= aes(xmin= From,xmax= To, ymin = -Inf, ymax = Inf), fill = "grey75", alpha=0.7) +
+        geom_line(color= "black") +
+        geom_hline(yintercept=0,color = "black") +
+        geom_ribbon(aes(ymin=up,ymax=0),fill="steelblue2",alpha=0.6)  +
+        geom_ribbon(aes(ymin=0,ymax=down),fill="tomato2",alpha=0.6)+
+        theme_bw() +
+        geom_rug(mapping = aes(color = color_id), sides= "b")+
+        scale_color_manual(values = c("steelblue1","tomato2")) +
+        labs(title = "Yield Curve Inversion: 10-year minus 3-month U.S. Treasury Rates",
+                 subtitle = "difference in % points, monthly averages
+shaded areas correspond to recessions",
+                 x ="",
+                 y = "Difference (10 year-3 month) yield in %",
+                 caption = "Source: FRED, Federal Reserve Bank of St. Louis") +
+         theme(legend.position = "none") +
+         scale_x_date(date_breaks = "2 year", date_labels ="%Y", limits = c(as.Date("1961-01-01"),as.Date("2021-01-12")))+
+         NULL
+treasury_rate_graph
+
+```
+
+Comment: The Yield Curve (YC) is defined as the difference (spread) between the yield on 10-year T-Bonds and yield on 3-month (or 1-year) T-Bonds. In simpler terms, YC depicts a relationship between short-term and long-term rates of most safe financial securities: Treasury Bonds. During the last 60 years, it has been interesting that mostly all times that YC inverted (negative spread), after 12-24 months, a recession began in the US (except for one occasion). The graph shows that after a period of inverted YC (red colour), a recession (shadow area) followed (except in the 1960s). Nevertheless, the inverted Yield Curve cannot predict with certainty if it would occur a recession and the depth of the recession. For instance, the 2020 Recession was caused by COVID 19 Pandemic. Nevertheless, the graph shows that there was an inverted YC before the 2020 recession. Therefore, one must be careful when concluding economic phenomena just based on a chart.
