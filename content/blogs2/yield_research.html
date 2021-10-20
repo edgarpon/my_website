@@ -1,15 +1,14 @@
 ---
-title: "Yield Curve Research"
-author: "Aditi Lapasia, Diego Alfaro Legonia, Edgar Pon, Ivy Liu, Teen Ho Nicholas Ching, Roberto Keaney, Susan Wang"
-date: "9th October 2021"
-output:
-  html_document:
-    theme: flatly
-    highlight: zenburn
-    number_sections: yes
-    toc: yes
-    toc_float: yes
-    code_folding: show
+categories:
+- ""
+- ""
+date: "2017-10-31T21:28:43-05:00"
+description: ""
+draft: false
+image: pic10.jpg
+keywords: ""
+slug: Yield study 
+title: Yield Curve Research
 ---
 
 <script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
@@ -110,7 +109,7 @@ yield_curve_table_2</code></pre>
                  y = &quot;%&quot;,
                  caption = &quot;Source: St. Louis Federal Reserve Economic Database (FRED)&quot;)+
   NULL</code></pre>
-<p><img src="/blogs/yield_research_files/figure-html/graph%201-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/blogs2/yield_research_files/figure-html/graph%201-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>Comment: There are 10 graphs that display the evolution of yields for T-Bonds with different maturities: 3-month-, 6-month, …, 30-year. During the 1960s, there was a positive trend increase for all yields (except 2-year, 7-year, and 20-year) which was driven mainly by Fed’s attempt to raise short-term rates and lower long-term rates in order to discourage capital outflows and stimulate investment. During the 1970s, interest rates decreased for the first years because of Nixon’s Government pressure on the Fed to boost consumption and investment. Nevertheless, high levels of inflation, mainly as a consequence of Fed’s low rates policy, were addressed with an increase of interest rates of up to 20%. During the early 1980s, a global recession was triggered by higher prices as a consequence of shortage of oil supply. The Fed’s policy was to increase interest rates in order to stop inflation. Nevertheless, policy led to a stagflation period of high inflation, high interest rates and low growth.</p>
 <p>During the early 1990s, the economy was still in recession and the Fed decided to increase rates. However, as inflation decreased, the Fed lowered interest rates (as shown in graphs) and the US economy experienced growth until the late 1990s. During the late 1990s and early 2000s, the US experienced a deterioration in its economy that forced the Fed to lower rates further in order to stimulate growth. Finally, after the 2008-2009 Financial Crisis, the Fed started to use another policy: Quantitative Easing. Via this new policy, the Fed would not only stimulate the economy through short term rates, but also in long term rates via purchasing of long-term bonds.</p>
 </div>
@@ -130,7 +129,7 @@ labs(title = &quot;US Yield Curve&quot;,
       y = &quot;Yield (%)&quot;,
       caption = &quot;Source: St. Louis Federal Reserve Economic Database (FRED)&quot;)+
   NULL</code></pre>
-<p><img src="/blogs/yield_research_files/figure-html/graph%202-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/blogs2/yield_research_files/figure-html/graph%202-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>Comment: Detailed graphs provide us with a better insight of how yield curves inverted between 12-24 month before recessions. For instance, during 2000, the graph shows an inversion in the yield curve 1 year before the 2001 crisis. Furthermore, before the 2008 crisis, the yield curve flattened in 2006 and 2007. Finally, in 2019 the yield curve flattened. However, it cannot be related to the 2020 crisis, which was caused by COVID 19 pandemic global restrictions.</p>
 </div>
 <div id="month-and-10-year-yields-since-1999" class="section level3">
@@ -148,7 +147,7 @@ ggplot(data = filter(yield_curve_table_4, date&gt;= &quot;1999-01-01&quot;),aes(
                  y = &quot;%&quot;,
                  caption = &quot;Source: St. Louis Federal Reserve Economic Database (FRED)&quot;)+
   NULL</code></pre>
-<p><img src="/blogs/yield_research_files/figure-html/graph%203-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/blogs2/yield_research_files/figure-html/graph%203-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>Comment: From the more-detailed graph we can conclude that the spread widens during economic growth times and it shortens as economic conditions deteriorate or even become negative 12 to 24 months before a recession. It is worth mentioning that the spread between 10-year and 3-month T-bills has widened as positive global expectations on economic growth are increasing, especially for the US economy, as the US population receives immunity brought by vaccines.</p>
 <p>The code below creates a dataframe with all US recessions since 1946</p>
 <pre class="r"><code># get US recession dates after 1946 from Wikipedia 
@@ -200,7 +199,7 @@ shaded areas correspond to recessions&quot;,
          scale_x_date(date_breaks = &quot;2 year&quot;, date_labels =&quot;%Y&quot;, limits = c(as.Date(&quot;1961-01-01&quot;),as.Date(&quot;2021-01-12&quot;)))+
          NULL
 treasury_rate_graph</code></pre>
-<p><img src="/blogs/yield_research_files/figure-html/graph%204-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/blogs2/yield_research_files/figure-html/graph%204-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>Comment: The Yield Curve (YC) is defined as the difference (spread) between the yield on 10-year T-Bonds and yield on 3-month (or 1-year) T-Bonds. In simpler terms, YC depicts a relationship between short-term and long-term rates of most safe financial securities: Treasury Bonds. During the last 60 years, it has been interesting that mostly all times that YC inverted (negative spread), after 12-24 months, a recession began in the US (except for one occasion). The graph shows that after a period of inverted YC (red colour), a recession (shadow area) followed (except in the 1960s). Nevertheless, the inverted Yield Curve cannot predict with certainty if it would occur a recession and the depth of the recession. For instance, the 2020 Recession was caused by COVID 19 Pandemic. Nevertheless, the graph shows that there was an inverted YC before the 2020 recession. Therefore, one must be careful when concluding economic phenomena just based on a chart.</p>
 </div>
 </div>
