@@ -88,15 +88,15 @@ params:
         subtitle: Curriculum Vitae
         title: My Experience
         url: '/files/Edgar Pon CV.pdf'
-      - image: inverted-yield.jpg
+      - image: portfolio.jpg
         subtitle: Asset Allocation Analysis
         title: Portfolio Construction
         url: '/files/Portfolio Analysis.pdf'
-      - image: approval.jpg
+      - image: crime.jpg
         subtitle: Analysis over time
         title: Crime vs Education   
         url: '/files/Crime-education.pdf'
-      - image: life_exp.jpg
+      - image: starbucks.jpg
         subtitle: Competition and Market Power
         title: Starbucks Research
         url: '/files/Starbucks.pdf'
@@ -109,4 +109,4 @@ params:
     enable: yes
     subtitle: "@Edgar Pon, Made with Academic theme for Hugo"
     title: 
-    url: blogs/About_me
+    url: blogs2
