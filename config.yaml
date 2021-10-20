@@ -34,8 +34,8 @@ params:
     text: Please visit [this page](/)
   favicon: favicon.ico
   footer:
-   ## copyright: Company Name
-    #enable: yes
+    copyright: Company Name
+    enable: yes
     #quicklinks:
       #- alt: HTML5 UP
         #text: 'Design: '
