@@ -45,7 +45,7 @@ library(vroom)
 
 # Biden's Approval Margins
 
-As we saw in class, fivethirtyeight.com has detailed data on [all polls that track the president's approval ](https://projects.fivethirtyeight.com/biden-approval-ratings)
+fivethirtyeight.com has detailed data on [all polls that track the president's approval ](https://projects.fivethirtyeight.com/biden-approval-ratings)
 
 ```{r, cache=TRUE}
 # Import approval polls data directly off fivethirtyeight website

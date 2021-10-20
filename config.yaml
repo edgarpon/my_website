@@ -105,8 +105,8 @@ params:
         title: Crime vs Education
         url: '/files/Crime-education.pdf'
   two:
-    buttonText: Get Started
+    buttonText: Click Here
     enable: yes
-    subtitle: "@Edgar Pon, Made with Academic theme for Hugo"
+    subtitle: "For more studies and projects"
     title: 
     url: blogs2
