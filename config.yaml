@@ -88,7 +88,7 @@ params:
         subtitle: Curriculum Vitae
         title: My Experience
         url: '/files/Edgar Pon CV.pdf'
-      - image: Inflation
+      - image: Inflation.jpg
         subtitle: ''
         title: CPI Research
         url: blogs/CPI
