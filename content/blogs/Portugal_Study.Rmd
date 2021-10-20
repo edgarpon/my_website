@@ -1,7 +1,6 @@
 
 ---
-
-title: "Portugal Study"
+title: "About Me"
 author: "Edgar Pon"
 date: "19/10/2021"
 output:
@@ -12,8 +11,8 @@ output:
     toc_float: yes
   pdf_document:
     toc: yes
-    
 ---
+
 
 ```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
 library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages

@@ -107,6 +107,6 @@ params:
   two:
     buttonText: Get Started
     enable: yes
-    subtitle: "@Edgar Pon, Made with Academic theme for Hugo and help of staff of Data Analytics for Finance"
-    title: Massa libero
+    subtitle: "@Edgar Pon, Made with Academic theme for Hugo template"
+    title: 
     url: '#'
