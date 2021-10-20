@@ -88,15 +88,15 @@ params:
         subtitle: Curriculum Vitae
         title: My Experience
         url: '/files/Edgar Pon CV.pdf'
-      - image: cv_pic.jpg
+      - image: inverted-yield.jpg
         subtitle: Analysis of yield inversion
         title: Yield Curve Research
         url: blogs/yield_research
-      - image: cv_pic1.jpg
+      - image: approval.jpg
         subtitle: Analysis over time
         title: Biden's Approval Rate Research  
         url: blogs/Biden_Study
-      - image: pic05.jpg
+      - image: life_exp.jpg
         subtitle: Life expectancy comparison
         title: Portugal Gapminder Research
         url: blogs/Portugal_Study
