@@ -89,17 +89,17 @@ params:
         title: My Experience
         url: '/files/Edgar Pon CV.pdf'
       - image: inverted-yield.jpg
-        subtitle: Portfolio Analysis
-        title: Portfolio Analysis
+        subtitle: Asset Allocation Analysis
+        title: Portfolio Construction
         url: '/files/Portfolio Analysis.pdf'
       - image: approval.jpg
         subtitle: Analysis over time
-        title: Biden's Approval Rate Research  
+        title: Crime vs Education   
         url: '/files/Crime-education.pdf'
       - image: life_exp.jpg
-        subtitle: Life expectancy comparison
-        title: Portugal Gapminder Research
-        url: blogs/Portugal_Study
+        subtitle: Competition and Market Power
+        title: Starbucks Research
+        url: '/files/Starbucks.pdf'
       #- image: pic06.jpg
         #subtitle: Feugiat Amet Tempus
         #title: The hell
