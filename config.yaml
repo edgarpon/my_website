@@ -75,8 +75,8 @@ params:
       - name: Portugal Gapminder Research
         url: blogs/Portugal_Study
     menu: Menu
-    subtitle: By HTML5 Up
-    title: Forty
+    #subtitle: By HTML5 Up
+    #title: Forty
   tiles:
     enable: yes
     showcase:
